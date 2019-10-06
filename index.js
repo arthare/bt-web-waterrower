@@ -3,12 +3,14 @@
 // 2) hook up to waterrower (find COM port, etc)
 // 3) probably do some dumping to text
 var {WaterRower} = require('waterrower');
-let waterrower = new WaterRower();
+let waterrower = new WaterRower({
+  datapoints:['distance','total_kcal', 'kcal_watts'],
+});
 const http = require('http');
 
 waterrower.on('initialized', () => {
   waterrower.reset();
-
+  waterrower.startRecording();
     
   waterrower.on('data', d => {
     // access the value that just changed using d
