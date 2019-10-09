@@ -68,10 +68,7 @@ waterrower.on('initialized', () => {
   });
 })
 
-const requestHandler = (request, response) => {
-  const tmNow = new Date().getTime();
-
-  let lastPull = kcalHistory[kcalHistory.length-1];
+function getLastPower(tmNow) {
   
   // let's figure out our cadence
   let sumDiffMs = 0;
@@ -89,22 +86,40 @@ const requestHandler = (request, response) => {
       sumPower += watts*diffMs;
       sumCount++;
 
-      console.log("Pulltime " + diffMs + "ms, " + joules + "J" + " -> " + 1000*joules/diffMs);
+      console.log("Pulltime " + diffMs + "ms, " + joules + "J" + " -> " + watts);
     }
   }
+
+  return  {
+    power: sumCount > 0 ? sumPower / sumDiffMs : 0,
+    cadencePeriodMs: sumDiffMs / sumCount,
+  };
+}
+
+
+setInterval(() => {
+  console.log(getLastPower(new Date().getTime()));
+}, 2000);
+
+const requestHandler = (request, response) => {
+  const tmNow = new Date().getTime();
+
+  const power = getLastPower(tmNow);
 
   let ret = {
     time: tmNow,
     power: 0,
   }
-  if(sumCount > 0) {
-    const cadencePeriodMs = sumDiffMs / sumCount;
+  if(power.power > 0) {
+    
+    let lastPull = kcalHistory[kcalHistory.length-1];
+    const cadencePeriodMs = power.cadencePeriodMs;
     const tmSinceLastPull = tmNow - lastPull.time;
     if(tmSinceLastPull <= 1.5*cadencePeriodMs) {
 
       ret = {
         time: lastPull.time,
-        power: sumPower / sumDiffMs,
+        power: power.power,
       }
 
     }
