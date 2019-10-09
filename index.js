@@ -108,7 +108,7 @@ const requestHandler = (request, response) => {
 
   let ret = {
     time: tmNow,
-    power: 0,
+    power: 1,
   }
   if(power.power > 0) {
     
